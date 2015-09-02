@@ -1,0 +1,87 @@
+@author Michael Wright <mjw@methodanalysis.com>
+@copyright 2015 Michael Wright <mjw@methodanalysis.com>
+@version 1.0.0
+@title Erlang FUSE (Filesystem in Userspace) interface.
+
+@doc
+
+This is an Erlang FUSE (Filesystem in Userspace) interface. You can use
+it to create additional file structure in your filesystem, defined in
+Erlang.
+
+To do so, you need to write an implementation module (a module that
+implements the 'efuse_fs' behaviour. There are 3 example such modules
+with efuse:
+
+<pre>
+    efuse_hellofs   - More or less the simplest possible case, it has
+                      a file and a sym link in the root directory.
+    efuse_examplefs - Not a lot more interesting than efuse_hellofs
+                      but with some more objects.
+    efuse_erlfs     - Much more interesting, more than just a static
+                      set of objects, necessitating a more creative
+                      implementation. This filesystem allows access
+                      to aspects of the run time state of the Erlang
+                      VM via the filesystem (for example, in the
+                      "pids" directory you will find a directory for
+                      every process currently running.
+</pre>
+
+To try out the example 'Erlang FS' filesystem implemented
+by the 'efuse_erlfs' module, create the "/tmp/erlfs" directory and
+do this this in your Erlang shell:
+
+<pre>
+     1> application:start(efuse).
+     ok
+     2> efuse:mount("/tmp/erlfs", efuse_erlfs, undefined).
+     {ok,&lt;0.40.0>}
+</pre>
+
+Now, look inside the /tmp/erlfs directory and you should find it populated.
+
+You can unmount the filesystem like this:
+
+<pre>
+     3> efuse:umount("/tmp/erlfs").
+     {ok,{stopping, &lt;0.40.0>}}
+</pre>
+
+Filesystems, once mounted, are supervised, so a crash should result in a
+reinstatement. Since a filesystem can be terminated in a normal way though
+you should be aware that this might not be true for every circumstance.
+
+As you might expect, if you unmount the file system by calling efuse:umount/1
+the filesystem will be unmounted and not reinstated.
+
+A system umount call made by a system administrator, from the shell or by
+other means will also cause the filesyste, to be unmounted and not reinstated.
+This is less clear, but some cooperation is obviously necessary between efuse
+and the system, and it seems a bit unfair on the system administrator if the
+execution of a perfectly normal and deliberate activity is frustrated.
+
+More controversial, if you kill the port process from the system with a TERM
+signal, the filesystem is also not reinstated. However a request to TERMinate
+is still an administrative action ultimately.
+
+If the port receives a signal which is not obviously administrative, or it
+crashes, then the supervisor (efuse_fs_sup) will reinstate the filesystem.
+You can kill the port with signal 9 to invoke this action.
+
+<b>LICENSING</b>
+
+This file is part of the Erlang FUSE (Filesystem in Userspace)
+interface called 'efuse'.
+
+'efuse' is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see &lt;http://www.gnu.org/licenses/>.

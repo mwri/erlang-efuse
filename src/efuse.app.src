@@ -1,0 +1,12 @@
+{application, efuse, [
+	{description, "Erlang FUSE (Filesystem in Userspace)"},
+	{vsn, "0.0.1"},
+	{registered, []},
+	{applications, [
+		kernel,
+		stdlib
+		]},
+	{mod, {efuse_app, []}},
+	{env, [
+		]}
+	]}.

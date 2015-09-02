@@ -1,0 +1,4 @@
+.eunit
+otp.plt
+efuse.plt
+dialyzer.log
