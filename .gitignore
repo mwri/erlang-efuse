@@ -1,5 +1,6 @@
-.eunit
-otp.plt
-efuse.plt
-dialyzer.log
-logs
+/.eunit
+/otp.plt
+/efuse.plt
+/dialyzer.log
+/logs
+/test/efuse_SUITE.beam

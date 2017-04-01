@@ -80,7 +80,14 @@ int main (int argc, char ** argv) {
 	// report my PID back to Erlang
 	((uint32_t*)erlmsg)[0] = htonl(EFUSE_STATUS_DATA);
 	((uint32_t*)erlmsg)[1] = htonl(getpid());
-	write_to_erlang(8, erlmsg);
+	if (write_to_erlang(8, erlmsg) != 8) {
+		syslog(
+			LOG_ERR,
+			"efuse[%d]: failure initialising (error writing pid to erlang VM)",
+			getpid()
+			);
+		exit(1);
+	}
 
 	// pass control to FUSE until it is done
 	syslog(LOG_NOTICE, "efuse[%d]: fuse mount %s", getpid(), argv[1]);
@@ -100,11 +107,19 @@ int write_to_erlang(
 		const unsigned char * data) {
 
 	int writelen;
-	uint32_t dataheader = htonl(datalen);
+
+	uint32_t dataheader = htonl(datalen + sizeof(uint32_t));
 	if ((writelen = write(4, (unsigned char *) &dataheader, 4)) != 4) {
 		syslog(LOG_WARNING, "efuse[%d]: write: port error writing data header (wrote %d)",
 				getpid(), writelen);
 		return -1;
+	}
+
+	uint32_t magiccookie1 = htonl(EFUSE_MAGICCOOKIE);
+	if ((writelen = write(4, (unsigned char *) &magiccookie1, 4)) != 4) {
+		syslog(LOG_CRIT, "efuse[%d]: write: port error writing magic cookie 1 (wrote %d)",
+				getpid(), writelen);
+		exit(1);
 	}
 
 	if (datalen > 0) {
@@ -126,19 +141,42 @@ int write_to_erlang(
 
 int read_from_erlang(unsigned char * buf, int maxdatalen) {
 
-	int      readlen;
 	uint32_t datalen;
 
+	int readlen;
 	if ((readlen = read(3, (unsigned char *) &datalen, 4)) != 4) {
-		syslog(LOG_WARNING, "efuse[%d]: read: port error reading data header (read %d)", getpid(), readlen);
+		syslog(LOG_WARNING, "efuse[%d]: read: port error reading data header (read %d)",
+				getpid(), readlen);
 		return -1;
 	}
-
 	datalen = ntohl(datalen);
 
-	if ((readlen = read(3, buf, datalen)) != datalen) {
-		syslog(LOG_WARNING, "efuse[%d]: read: port read %d (expected %d)", getpid(), readlen, datalen);
-		return -1;
+	uint32_t magiccookie1;
+	if ((readlen = read(3, (unsigned char *) &magiccookie1, 4)) != 4) {
+		syslog(LOG_CRIT, "efuse[%d]: read: port error reading data header (read %d)",
+			getpid(), readlen);
+		exit(1);
+	}
+	magiccookie1 = ntohl(magiccookie1);
+	if (magiccookie1 != EFUSE_MAGICCOOKIE) {
+		syslog(LOG_CRIT, "efuse[%d]: read: port read invalid magic cookie %u",
+				getpid(), magiccookie1);
+		exit(1);
+	}
+	datalen -= sizeof(uint32_t);
+
+	uint32_t readtotal = 0;
+	while (readtotal < datalen) {
+		readlen = read(3, buf+readtotal, datalen-readtotal);
+		if (readlen < 0) {
+			syslog(LOG_ERR, "efuse[%d]: read: port read %d (expected %d)",
+					getpid(), readtotal, datalen);
+			return -1;
+		}
+		readtotal += readlen;
+		if (readtotal < datalen)
+			syslog(LOG_WARNING, "efuse[%d]: read: port short read (%d of %d)",
+					getpid(), readtotal, datalen);
 	}
 
 	return datalen;
@@ -176,7 +214,7 @@ static int fusecb_getattr(
 	// check response not an error
 	unsigned int replyresult = ntohl(((uint32_t*)erlmsg)[1]);
 	if (replyresult != 0) {
-		syslog(LOG_ERR,
+		syslog(LOG_WARNING,
 				"efuse[%d]: response result code %d (error) from FS implementation (getattr %s)",
 				getpid(), replyresult, path);
 		return -ENOENT;
@@ -236,7 +274,7 @@ static int fusecb_readdir(
 	// check response not an error
 	unsigned int replyresult = ntohl(((uint32_t*)erlmsg)[1]);
 	if (replyresult != 0) {
-		syslog(LOG_ERR,
+		syslog(LOG_WARNING,
 				"efuse[%d]: response result code %d (error) from FS implementation (readdir %s)",
 				getpid(), replyresult, path);
 		return -ENOENT;
@@ -288,7 +326,7 @@ static int fusecb_read(
 	// check response not an error
 	unsigned int replyresult = ntohl(((uint32_t*)erlmsg)[1]);
 	if (replyresult != 0) {
-		syslog(LOG_ERR,
+		syslog(LOG_WARNING,
 				"efuse[%d]: response result code %d (error) from FS implementation (read %s)",
 				getpid(), replyresult, path);
 		return -ENOENT;
@@ -342,7 +380,7 @@ static int fusecb_readlink(
 	// check response not an error
 	unsigned int replyresult = ntohl(((uint32_t*)erlmsg)[1]);
 	if (replyresult != 0) {
-		syslog(LOG_ERR,
+		syslog(LOG_WARNING,
 				"efuse[%d]: response result code %d (error) from FS implementation (readlink %s)",
 				getpid(), replyresult, path);
 		return -ENOENT;

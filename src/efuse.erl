@@ -172,6 +172,7 @@ init([MountPoint, CbMod, CbData]) ->
 		{error, bad_name} -> "./priv/efuse";
 		LibPath -> LibPath ++ "/priv/efuse"
 		end,
+	true = filelib:is_file(PortPath),
     Port = open_port(
 		{spawn, PortPath++" -f "++MountPoint},
 		[{packet, 4}, nouse_stdio, exit_status, binary]
@@ -192,8 +193,7 @@ init([MountPoint, CbMod, CbData]) ->
 
 %% @private
 
-terminate(Reason, #?MODULE{port_os_pid=undefined}) ->
-	io:format("terminate ~p ~n", [Reason]),
+terminate(_Reason, #?MODULE{port_os_pid=undefined}) ->
 	undefined
 	;
 terminate(_Reason, #?MODULE{
@@ -216,7 +216,7 @@ code_change(_OldVsn, State, _Extra) ->
 %% @private
 
 port_tx(Data, State = #?MODULE{port=Port}) ->
-	true = port_command(Port, Data),
+	true = port_command(Port, <<?EFUSE_MAGICCOOKIE:32/integer, Data/binary>>),
 	State
 	.
 
@@ -240,7 +240,10 @@ handle_fusereq(
 				{<<ReqCode:32/integer, ErrCode:32/integer>>, PostCbFsState}
 			end
 		catch A:B ->
-			io:format("exception ~p:~p: ~p~n", [A, B, erlang:get_stacktrace()]),
+			error_logger:error_msg(
+				"Caught exception ~p:~p from ~s filesystem implementation",
+				[A, B, CbMod]
+				),
 			{<<ReqCode:32/integer, ?EFUSE_ERROR_NOENT:32/integer>>, FsState}
 		end,
 	port_tx(PortReply, State#?MODULE{fs_state=NewFsState})
@@ -250,7 +253,10 @@ handle_fusereq(
 %% @private
 
 handle_info(
-		{Port, {data, <<?EFUSE_REQUEST_READDIR:32/integer, Path/binary>>}},
+		{Port, {data, <<
+			?EFUSE_MAGICCOOKIE:32/integer,
+			?EFUSE_REQUEST_READDIR:32/integer, Path/binary
+			>>}},
 		State
 		) when (Port == State#efuse.port) ->
 	NewState = handle_fusereq(
@@ -267,7 +273,11 @@ handle_info(
 	;
 
 handle_info(
-		{Port, {data, <<?EFUSE_REQUEST_GETATTR:32/integer, Path/binary>>}},
+		{Port, {data, <<
+			?EFUSE_MAGICCOOKIE:32/integer,
+			?EFUSE_REQUEST_GETATTR:32/integer,
+			Path/binary>>
+			}},
 		State
 		) when (Port == State#efuse.port) ->
 	NewState = handle_fusereq(
@@ -280,7 +290,11 @@ handle_info(
 	;
 
 handle_info(
-		{Port, {data, <<?EFUSE_REQUEST_READLINK:32/integer, Path/binary>>}},
+		{Port, {data, <<
+			?EFUSE_MAGICCOOKIE:32/integer,
+			?EFUSE_REQUEST_READLINK:32/integer,
+			Path/binary>>
+			}},
 		State
 		) when (Port == State#efuse.port) ->
 	NewState = handle_fusereq(
@@ -293,7 +307,11 @@ handle_info(
 	;
 
 handle_info(
-		{Port, {data, <<?EFUSE_REQUEST_READ:32/integer, Path/binary>>}},
+		{Port, {data, <<
+			?EFUSE_MAGICCOOKIE:32/integer,
+			?EFUSE_REQUEST_READ:32/integer,
+			Path/binary>>
+			}},
 		State
 		) when (Port == State#efuse.port) ->
 	NewState = handle_fusereq(
@@ -306,9 +324,13 @@ handle_info(
 	;
 
 handle_info(
-	{Port, {data, <<?EFUSE_STATUS_DATA:32/integer, PortOsPid:32/integer>>}},
-	State = #?MODULE{}
-	) when (Port == State#efuse.port) ->
+		{Port, {data, <<
+			?EFUSE_MAGICCOOKIE:32/integer,
+			?EFUSE_STATUS_DATA:32/integer,
+			PortOsPid:32/integer>>
+			}},
+		State = #?MODULE{}
+		) when (Port == State#efuse.port) ->
 	{noreply, State#?MODULE{port_os_pid=PortOsPid}}
 	;
 
@@ -320,11 +342,19 @@ handle_info(
 	;
 
 handle_info(
-		{Port, {data, Data}},
+		{Port, {data, <<?EFUSE_MAGICCOOKIE:32/integer, Data/binary>>}},
 		State = #?MODULE{}
 		) when (Port == State#efuse.port) ->
 	error_logger:error_msg("Port data ~p to efuse ~p unrecognised.~n", [Data, self()]),
 	{noreply, State}
+	;
+
+handle_info(
+		{Port, {data, Data}},
+		State = #?MODULE{}
+		) when (Port == State#efuse.port) ->
+	error_logger:error_msg("Port data ~p without correct cookie to efuse ~p.~n", [Data, self()]),
+	{stop, {error, "communication with port fatally compromised (bad cookie)"}, State}
 	.
 
 

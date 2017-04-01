@@ -28,15 +28,16 @@
 
 
 defs() -> [
-	{"EFUSE_STATUS_DATA", "100"},
-	{"EFUSE_REQUEST_READDIR", "3"},
-	{"EFUSE_REQUEST_GETATTR", "4"},
-	{"EFUSE_REQUEST_READLINK", "5"},
-	{"EFUSE_REQUEST_READ", "6"},
-	{"EFUSE_ATTR_DIR", "1"},
-	{"EFUSE_ATTR_FILE", "2"},
-	{"EFUSE_ATTR_SYMLINK", "3"},
-	{"EFUSE_ERROR_NOENT", "2"}
+	{"EFUSE_STATUS_DATA",      "100"       },
+	{"EFUSE_REQUEST_READDIR",  "3"         },
+	{"EFUSE_REQUEST_GETATTR",  "4"         },
+	{"EFUSE_REQUEST_READLINK", "5"         },
+	{"EFUSE_REQUEST_READ",     "6"         },
+	{"EFUSE_ATTR_DIR",         "1"         },
+	{"EFUSE_ATTR_FILE",        "2"         },
+	{"EFUSE_ATTR_SYMLINK",     "3"         },
+	{"EFUSE_ERROR_NOENT",      "2"         },
+	{"EFUSE_MAGICCOOKIE",      "3223410092"}
 	].
 
 
@@ -59,7 +60,8 @@ pre_compile(_,_) ->
 
 clean(_,_) ->
 	file:delete("include/efuse_defs.hrl"),
-	file:delete("c_src/efuse_defs.h")
+	file:delete("c_src/efuse_defs.h"),
+	ok
 	.
 
 

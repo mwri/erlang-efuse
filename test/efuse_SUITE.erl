@@ -82,5 +82,6 @@ fs_files(efuse_examplefs) -> [
 	{"file1", "This is file one in the root directory."}
 	];
 fs_files(efuse_hellofs) -> [
+	{"hello", "Hello world!"},
 	{"world", "Hello world!"}
 	].
