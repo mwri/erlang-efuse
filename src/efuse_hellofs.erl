@@ -75,7 +75,7 @@ efuse_getattr(State, _) ->
 
 %% @doc Behaviour callback implementation for 'efuse_fs'.
 
-efuse_readlink(State, <<"world">>) ->
+efuse_readlink(State, <<"/world">>) ->
 	{ok, <<"hello">>, State}
 	;
 efuse_readlink(State, _) ->

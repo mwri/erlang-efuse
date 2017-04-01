@@ -236,6 +236,10 @@ traverse(State, Request, {code, module, Module}, []) ->
 	;
 traverse(State, Request, {code, module, Module}, [<<"file">>]) ->
 	?MODULE:Request(State, {code, module, Module, file})
+	;
+
+traverse(State, _, _, _) ->
+	{error, ?EFUSE_ERROR_NOENT, State}
 	.
 
 

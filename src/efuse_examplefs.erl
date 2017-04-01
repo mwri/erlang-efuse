@@ -74,10 +74,10 @@ efuse_getattr(State, <<"/dir2">>) ->
 	{ok, {8#0755, ?EFUSE_ATTR_DIR, 0}, State}
 	;
 efuse_getattr(State, <<"/file1">>) ->
-	{ok, {8#0644, ?EFUSE_ATTR_FILE, file_size(State, "/file1")}, State}
+	{ok, {8#0644, ?EFUSE_ATTR_FILE, file_size(State, <<"/file1">>)}, State}
 	;
 efuse_getattr(State, <<"/file2">>) ->
-	{ok, {8#0644, ?EFUSE_ATTR_FILE, file_size(State, "/file2")}, State}
+	{ok, {8#0644, ?EFUSE_ATTR_FILE, file_size(State, <<"/file2">>)}, State}
 	;
 efuse_getattr(State, <<"/link1">>) ->
 	{ok, {8#0755, ?EFUSE_ATTR_SYMLINK, 0}, State}
@@ -85,13 +85,13 @@ efuse_getattr(State, <<"/link1">>) ->
 efuse_getattr(State, <<"/link2">>) ->
 	{ok, {8#0755, ?EFUSE_ATTR_SYMLINK, 0}, State}
 	;
-efuse_getattr(State, <<"dir1/file1">>) ->
-	{ok, {8#0644, ?EFUSE_ATTR_FILE, file_size(State, "/dir1/file1")}, State}
+efuse_getattr(State, <<"/dir1/file1">>) ->
+	{ok, {8#0644, ?EFUSE_ATTR_FILE, file_size(State, <<"/dir1/file1">>)}, State}
 	;
-efuse_getattr(State, <<"dir2/file3">>) ->
-	{ok, {8#0644, ?EFUSE_ATTR_FILE, file_size(State, "/dir2/file3")}, State}
+efuse_getattr(State, <<"/dir2/file3">>) ->
+	{ok, {8#0644, ?EFUSE_ATTR_FILE, file_size(State, <<"/dir2/file3">>)}, State}
 	;
-efuse_getattr(State, <<"dir2/link2">>) ->
+efuse_getattr(State, <<"/dir2/link2">>) ->
 	{ok, {8#0755, ?EFUSE_ATTR_SYMLINK, 0}, State}
 	;
 efuse_getattr(State, _) ->
@@ -101,10 +101,10 @@ efuse_getattr(State, _) ->
 
 %% @doc Behaviour callback implementation for 'efuse_fs'.
 
-efuse_readlink(State, <<"link1">>) ->
+efuse_readlink(State, <<"/link1">>) ->
 	{ok, <<"file1">>, State}
 	;
-efuse_readlink(State, <<"link2">>) ->
+efuse_readlink(State, <<"/link2">>) ->
 	{ok, <<"dir1/file1">>, State}
 	;
 efuse_readlink(State, <<"/dir2/link2">>) ->
