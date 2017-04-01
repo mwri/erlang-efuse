@@ -69,9 +69,15 @@ umount(Config) ->
 
 read_files(Config) ->
 	{mount_dir, MountDir} = lists:keyfind(mount_dir, 1, Config),
-	{file_reads, [{Filename, Content} | MoreFileReads]} = lists:keyfind(file_reads, 1, Config),
-	{ok, ActualBinContent} = file:read_file(MountDir++"/"++Filename),
-	Content = binary_to_list(ActualBinContent)
+	{file_reads, FileReads} = lists:keyfind(file_reads, 1, Config),
+	lists:foreach(
+		fun ({Filename, ExpectContent}) ->
+			{ok, ActualBinContent} = file:read_file(MountDir++"/"++Filename),
+			ExpectContent = binary_to_list(ActualBinContent)
+			end,
+		FileReads
+		),
+	ok
 	.
 
 
