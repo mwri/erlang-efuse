@@ -26,9 +26,9 @@ dialyzer: compile efuse.plt
 	dialyzer --plt efuse.plt -o dialyzer.log ebin
 
 test:
-	rebar skip_deps=true eunit ct
-
-node: compile
-	rebar generate -fv
+	mkdir -p deps
+	ln -s .. deps/efuse
+	rebar skip_deps=true ct
+	rm deps/efuse
 
 .PHONY: test

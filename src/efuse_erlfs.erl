@@ -302,7 +302,7 @@ erlfs_readdir(State, {local_name, _Name}) ->
 erlfs_readdir(State, nodes) ->
 	{ok, lists:map(
 		fun(Node) -> list_to_binary(atom_to_list(Node)) end,
-		nodes()
+		[node()|nodes()]
 		), State}
 	;
 erlfs_readdir(State, {node, _Node}) ->

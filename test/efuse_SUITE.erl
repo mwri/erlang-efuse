@@ -35,7 +35,6 @@ end_per_suite(_Config) ->
 	.
 
 init_per_group(Group, Config) ->
-	{priv_dir, PrivateDir} = lists:keyfind(priv_dir, 1, Config),
 	MountDir = "/tmp/erlang_ct_mount_"++atom_to_list(Group),
 	case file:make_dir(MountDir) of
 		ok -> ok;

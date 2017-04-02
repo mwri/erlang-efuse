@@ -66,7 +66,7 @@ efuse_getattr(State, <<"/hello">>) ->
 	{ok, {8#0644, ?EFUSE_ATTR_FILE, byte_size(<<"Hello world!">>)}, State}
 	;
 efuse_getattr(State, <<"/world">>) ->
-	{ok, {8#0755, ?EFUSE_ATTR_SYMLINK, 0}, State}
+	{ok, {8#0755, ?EFUSE_ATTR_SYMLINK, length("hello")}, State}
 	;
 efuse_getattr(State, _) ->
 	{error, ?EFUSE_ERROR_NOENT, State}
