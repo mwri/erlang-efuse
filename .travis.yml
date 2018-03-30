@@ -7,7 +7,7 @@ otp_release:
   - 20.3
 sudo: required
 before_install:
-  - sudo apt-get install -qq pkg-config fuse libfuse-dev
+  - sudo apt-get install -qq pkg-config fuse libfuse-dev erlang-dev
   - sudo modprobe fuse
   - sudo chmod 666 /dev/fuse
   - sudo chown root:$USER /etc/fuse.conf
