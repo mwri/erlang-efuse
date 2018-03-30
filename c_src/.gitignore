@@ -1,2 +1,2 @@
-efuse_defs.h
-efuse.o
+/efuse.o
+/efuse.d

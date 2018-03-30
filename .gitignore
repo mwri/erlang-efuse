@@ -4,3 +4,5 @@
 /dialyzer.log
 /logs
 /test/efuse_SUITE.beam
+/.rebar/
+/compile_commands.json
