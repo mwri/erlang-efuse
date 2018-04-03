@@ -1,8 +1,8 @@
-/.eunit
 /otp.plt
 /efuse.plt
 /dialyzer.log
 /logs
 /test/efuse_SUITE.beam
 /.rebar/
-/compile_commands.json
+/rebar.lock
+/_build/

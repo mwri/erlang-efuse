@@ -1,12 +1,19 @@
 {application, efuse, [
 	{description, "Erlang FUSE (Filesystem in Userspace)"},
-	{vsn, "1.0.0"},
+	{vsn, "1.0.1"},
+	{licenses, ["MIT"]},
+	{maintainers, [
+		"Michael Wright <mjw@methodanalysis.com>"
+	]},
 	{registered, []},
 	{applications, [
 		kernel,
 		stdlib
-		]},
+	]},
 	{mod, {efuse_app, []}},
 	{env, [
-		]}
-	]}.
+	]},
+	{links, [
+		{"Github", "https://github.com/mwri/erlang-cgolam"}
+	]}
+]}.

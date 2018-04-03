@@ -71,8 +71,7 @@ read_files(Config) ->
 	{file_reads, FileReads} = lists:keyfind(file_reads, 1, Config),
 	lists:foreach(
 		fun ({Filename, ExpectContent}) ->
-			{ok, ActualBinContent} = file:read_file(MountDir++"/"++Filename),
-			ExpectContent = binary_to_list(ActualBinContent)
+			ExpectContent = os:cmd("cat "++MountDir++"/"++Filename)
 			end,
 		FileReads
 		),

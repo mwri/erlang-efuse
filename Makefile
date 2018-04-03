@@ -5,15 +5,16 @@ ERL    = erl
 all: compile
 
 compile:
-	rebar -v compile
+	rebar3 compile
 
 docs:
-	rebar doc skip_deps=true
+	rebar3 edoc
 
 clean:
-	rebar clean
+	rebar3 clean
+	rm -rf _build priv/efuse
 
-otp.plt:
+otp.plt: Makefile
 	dialyzer --build_plt --output_plt otp.plt --apps \
 		erts kernel stdlib compiler crypto eunit \
 			| fgrep -v dialyzer.ignore
@@ -27,8 +28,9 @@ dialyzer: compile efuse.plt
 
 test:
 	mkdir -p deps
+	rm -f deps/efuse
 	ln -s .. deps/efuse
-	rebar skip_deps=true ct
+	rebar3 ct
 	rm deps/efuse
 
 .PHONY: test
