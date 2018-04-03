@@ -1,6 +1,6 @@
 {application, efuse, [
 	{description, "Erlang FUSE (Filesystem in Userspace)"},
-	{vsn, "1.0.1"},
+	{vsn, "1.0.2"},
 	{licenses, ["MIT"]},
 	{maintainers, [
 		"Michael Wright <mjw@methodanalysis.com>"
