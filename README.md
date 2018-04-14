@@ -4,6 +4,9 @@ This is an Erlang FUSE (Filesystem in Userspace) interface. You can use
 it to create additional file structure in your filesystem, defined in
 Erlang.
 
+If you are looking for an **Elixir** solution, see
+[elixir-userfs](https://github.com/mwri/elixir-userfs).
+
 To do so, you need to write an implementation module (a module that
 implements the 'efuse_fs' behaviour). All this really involves is
 answer fuse's questions about your files, for example fuse asks
