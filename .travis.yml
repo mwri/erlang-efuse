@@ -5,6 +5,8 @@ otp_release:
   - 19.1
   - 17.5
   - 20.3
+  - 21.3
+  - 22.0
 sudo: required
 before_install:
   - kerl list installations
