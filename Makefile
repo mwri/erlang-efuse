@@ -1,7 +1,6 @@
 ERLC   = erlc
 ERL    = erl
 
-
 all: compile
 
 compile:
