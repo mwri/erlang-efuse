@@ -6,3 +6,4 @@
 /.rebar/
 /rebar.lock
 /_build/
+/deps
